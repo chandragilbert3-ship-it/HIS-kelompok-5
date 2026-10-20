@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS RS Dunia Indah - Login</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body {
+    background:#eef3fa;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  .page-wrapper {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    width:900px;
+    max-width:95%;
+  }
+
+  .login-wrapper {
+    display:flex;
+    width:100%;
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 4px 20px rgba(29,78,216,0.15);
+  }
+
+  /* Panel kiri - branding */
+  .brand-panel {
+    flex:1;
+    background:linear-gradient(160deg, #1d4ed8, #1e3a8a);
+    color:#fff;
+    padding:44px 36px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .brand-logo {
+    width:120px; height:120px;
+    background:#fff;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:26px;
+    padding:14px;
+    overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,0.15);
+  }
+  .brand-logo img {
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+  }
+  .brand-panel h2 {
+    font-size:22px;
+    margin-bottom:12px;
+    line-height:1.4;
+  }
+  .brand-panel p {
+    font-size:13.5px;
+    color:#dbeafe;
+    line-height:1.6;
+    margin-bottom:28px;
+  }
+  .brand-panel ul {
+    list-style:none;
+    font-size:13px;
+    color:#e0ecff;
+    text-align:left;
+  }
+  .brand-panel ul li {
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .brand-panel ul li::before {
+    content:"";
+    width:6px; height:6px;
+    background:#93c5fd;
+    border-radius:50%;
+    display:inline-block;
+  }
+
+  /* Panel kanan - form login */
+  .form-panel {
+    flex:1;
+    padding:48px 40px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .form-panel h1 {
+    font-size:20px;
+    color:#1e293b;
+    margin-bottom:6px;
+  }
+  .form-panel .subtitle {
+    font-size:13px;
+    color:#64748b;
+    margin-bottom:28px;
+  }
+
+  .login-error {
+    background:#fee2e2;
+    color:#b91c1c;
+    font-size:12.5px;
+    padding:9px 13px;
+    border-radius:7px;
+    margin-bottom:16px;
+    display:none;
+  }
+
+  .form-group { margin-bottom:18px; }
+  .form-group label {
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:#334155;
+    margin-bottom:6px;
+  }
+  .form-group input {
+    width:100%;
+    padding:11px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    font-size:13.5px;
+  }
+  .form-group input:focus {
+    outline:none;
+    border-color:#1d4ed8;
+  }
+
+  .form-options {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12.5px;
+    color:#475569;
+    margin-bottom:22px;
+  }
+  .form-options a { color:#1d4ed8; text-decoration:none; }
+  .form-options a:hover { text-decoration:underline; }
+
+  .btn-login {
+    width:100%;
+    padding:12px;
+    background:#1d4ed8;
+    color:#fff;
+    border:none;
+    border-radius:7px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-login:hover { background:#1e40af; }
+
+  .divider {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:24px 0;
+    color:#94a3b8;
+    font-size:12px;
+  }
+  .divider::before, .divider::after {
+    content:"";
+    flex:1;
+    height:1px;
+    background:#e2e8f0;
+  }
+
+  .footer-note {
+    text-align:center;
+    font-size:11.5px;
+    color:#94a3b8;
+    margin-top:28px;
+  }
+
+  /* ================= DEMO CREDENTIALS BOX ================= */
+  .demo-box {
+    width:100%;
+    background:#fff;
+    border:1px dashed #93c5fd;
+    border-radius:12px;
+    padding:18px 24px;
+    box-shadow:0 2px 8px rgba(29,78,216,0.08);
+  }
+  .demo-box-title {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    font-weight:700;
+    color:#1d4ed8;
+    margin-bottom:12px;
+  }
+  .demo-box-title .badge {
+    background:#dbeafe;
+    color:#1d4ed8;
+    font-size:10px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:10px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+  .demo-scroll { max-height:300px; overflow-y:auto; }
+  .demo-table th { position:sticky; top:0; background:#fff; }
+  .demo-table {
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+  }
+  .demo-table th {
+    text-align:left;
+    color:#64748b;
+    font-weight:600;
+    font-size:11px;
+    text-transform:uppercase;
+    padding:6px 10px;
+    border-bottom:1px solid #e2e8f0;
+  }
+  .demo-table td {
+    padding:8px 10px;
+    border-bottom:1px solid #f1f5f9;
+    color:#334155;
+  }
+  .demo-table tr:last-child td { border-bottom:none; }
+  .demo-table td.role-cell {
+    font-weight:600;
+    color:#1e3a8a;
+  }
+  .demo-table td code {
+    background:#f0f6ff;
+    color:#1d4ed8;
+    padding:2px 7px;
+    border-radius:5px;
+    font-family:'Consolas', monospace;
+    font-size:12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <div class="login-wrapper">
+
+    <!-- Panel Kiri: Branding -->
+    <div class="brand-panel">
+      <div class="brand-logo">
+        <img src="logo-rs.png" alt="Logo RS Dunia Indah">
+      </div>
+      <h2>Sistem Informasi Manajemen<br>Rumah Sakit Dunia Indah</h2>
+      <p>Satu platform terintegrasi untuk mendukung seluruh proses layanan rumah sakit — dari registrasi pasien hingga pelaporan manajemen.</p>
+      <ul>
+        <li>16 modul terintegrasi sesuai TRD</li>
+        <li>Akses berdasarkan role pengguna</li>
+        <li>Registrasi, layanan klinis, penunjang, dan keuangan</li>
+        <li>Laporan dan dashboard manajemen</li>
+      </ul>
+    </div>
+
+    <!-- Panel Kanan: Form Login -->
+    <div class="form-panel">
+      <h1>Masuk ke Akun Anda</h1>
+      <p class="subtitle">Silakan login menggunakan akun SIMRS Anda</p>
+
+      <div class="login-error" id="loginError">Username atau kata sandi salah. Silakan coba lagi.</div>
+
+      <div class="form-group">
+        <label>Username / ID Pengguna</label>
+        <input type="text" id="username" placeholder="Masukkan username Anda">
+      </div>
+
+      <div class="form-group">
+        <label>Kata Sandi</label>
+        <input type="password" id="password" placeholder="Masukkan kata sandi">
+      </div>
+
+      <div class="form-options">
+        <label><input type="checkbox"> Ingat saya</label>
+        <a href="#">Lupa kata sandi?</a>
+      </div>
+
+      <button class="btn-login" onclick="doLogin()">Masuk</button>
+
+      <div class="divider">atau</div>
+
+      <p style="text-align:center; font-size:12.5px; color:#64748b;">
+        Butuh bantuan akses? Hubungi <a href="#" style="color:#1d4ed8;">Admin IT</a>
+      </p>
+
+      <div class="footer-note">© 2026 SIMRS RS Dunia Indah. Seluruh hak cipta dilindungi.</div>
+    </div>
+
+  </div>
+
+  <!-- Box Kredensial Demo -->
+  <div class="demo-box">
+    <div class="demo-box-title">
+      🔑 Kredensial Akun Demo <span class="badge">Hanya untuk Simulasi</span>
+    </div>
+    <div class="demo-scroll"><table class="demo-table">
+      <tr>
+        <th>No</th>
+        <th>Role</th>
+        <th>Username</th>
+        <th>Password</th>
+        <th>Modul Tujuan</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td class="role-cell">Admin Keamanan (IAM)</td>
+        <td><code>iam</code></td>
+        <td><code>iam123</code></td>
+        <td>Authentication & User Management</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td class="role-cell">Petugas Registrasi</td>
+        <td><code>registrasi</code></td>
+        <td><code>reg123</code></td>
+        <td>Patient Registration</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td class="role-cell">Petugas Penjadwalan</td>
+        <td><code>jadwal</code></td>
+        <td><code>jadwal123</code></td>
+        <td>Scheduling & Appointment</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td class="role-cell">Dokter Poli Rawat Jalan</td>
+        <td><code>poli</code></td>
+        <td><code>poli123</code></td>
+        <td>Outpatient (Rawat Jalan)</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td class="role-cell">Koordinator Rawat Inap</td>
+        <td><code>ranap</code></td>
+        <td><code>ranap123</code></td>
+        <td>Inpatient (Rawat Inap)</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td class="role-cell">Dokter IGD</td>
+        <td><code>igd</code></td>
+        <td><code>igd123</code></td>
+        <td>Emergency / IGD</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td class="role-cell">Dokter Penanggung Jawab</td>
+        <td><code>emr</code></td>
+        <td><code>emr123</code></td>
+        <td>Electronic Medical Record (EMR)</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td class="role-cell">Perawat</td>
+        <td><code>perawat</code></td>
+        <td><code>perawat123</code></td>
+        <td>Nursing (Keperawatan)</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td class="role-cell">Dokter / DPJP</td>
+        <td><code>dokter</code></td>
+        <td><code>dokter123</code></td>
+        <td>CPOE / Order Management</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td class="role-cell">Analis Laboratorium</td>
+        <td><code>lab</code></td>
+        <td><code>lab123</code></td>
+        <td>Laboratory</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td class="role-cell">Radiografer</td>
+        <td><code>radiologi</code></td>
+        <td><code>rad123</code></td>
+        <td>Radiology</td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td class="role-cell">Apoteker</td>
+        <td><code>apoteker</code></td>
+        <td><code>apt123</code></td>
+        <td>Pharmacy (Farmasi)</td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td class="role-cell">Kasir</td>
+        <td><code>kasir</code></td>
+        <td><code>kasir123</code></td>
+        <td>Billing & Insurance</td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td class="role-cell">Petugas Gudang</td>
+        <td><code>gudang</code></td>
+        <td><code>gudang123</code></td>
+        <td>Inventory & Warehouse</td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td class="role-cell">Manajemen</td>
+        <td><code>manajemen</code></td>
+        <td><code>mgmt123</code></td>
+        <td>Reporting & Dashboard</td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td class="role-cell">Admin Sistem (IT)</td>
+        <td><code>admin.it</code></td>
+        <td><code>admin123</code></td>
+        <td>Master Data & Configuration</td>
+      </tr>
+    </table></div>
+  </div>
+
+</div>
+
+<script>
+  // Kredensial akun -> dipetakan ke role & file halaman tujuan
+  const accounts = {
+    "iam": { password:"iam123", page:"auth.html" },
+    "registrasi": { password:"reg123", page:"registrasi.html" },
+    "jadwal": { password:"jadwal123", page:"scheduling.html" },
+    "poli": { password:"poli123", page:"outpatient.html" },
+    "ranap": { password:"ranap123", page:"inpatient.html" },
+    "igd": { password:"igd123", page:"igd.html" },
+    "emr": { password:"emr123", page:"emr.html" },
+    "perawat": { password:"perawat123", page:"nursing.html" },
+    "dokter": { password:"dokter123", page:"cpoe.html" },
+    "lab": { password:"lab123", page:"lab.html" },
+    "radiologi": { password:"rad123", page:"radiology.html" },
+    "apoteker": { password:"apt123", page:"pharmacy.html" },
+    "kasir": { password:"kasir123", page:"billing.html" },
+    "gudang": { password:"gudang123", page:"inventory.html" },
+    "manajemen": { password:"mgmt123", page:"reporting.html" },
+    "admin.it": { password:"admin123", page:"masterdata.html" }
+  };
+
+  function doLogin() {
+    const u = document.getElementById("username").value.trim().toLowerCase();
+    const p = document.getElementById("password").value.trim();
+    const acc = accounts[u];
+
+    if (acc && acc.password === p) {
+      window.location.href = acc.page;
+    } else {
+      document.getElementById("loginError").style.display = "block";
+    }
+  }
+
+  // Enter key juga bisa submit
+  document.getElementById("password").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") doLogin();
+  });
+</script>
+
+</body>
+</html>

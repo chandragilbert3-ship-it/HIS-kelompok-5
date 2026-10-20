@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS - Modul Billing & Insurance</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background:#eef3fa; color:#1e293b; }
+  .navbar { background:#1d4ed8; color:#fff; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+  .navbar .brand { display:flex; align-items:center; gap:12px; }
+  .navbar .brand-mini { width:32px; height:32px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px; }
+  .navbar .brand-mini img { max-width:100%; max-height:100%; object-fit:contain; }
+  .navbar h1 { font-size:18px; font-weight:600; }
+  .navbar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .navbar .avatar { width:32px; height:32px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+  .navbar .logout-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; }
+  .navbar .logout-btn:hover { background:rgba(255,255,255,0.25); }
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+  .sidebar { width:230px; background:#1e3a8a; color:#dbeafe; padding:20px 0; flex-shrink:0; }
+  .sidebar .menu-item { padding:12px 24px; cursor:pointer; font-size:14px; border-left:4px solid transparent; }
+  .sidebar .menu-item.active { background:#2563eb; border-left:4px solid #93c5fd; color:#fff; font-weight:600; }
+  .sidebar .menu-item:hover { background:#2547a0; }
+  .content { flex:1; padding:28px; min-width:0; }
+  .breadcrumb { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .breadcrumb span { color:#1d4ed8; font-weight:600; }
+  .card { background:#fff; border-radius:10px; padding:22px; margin-bottom:22px; box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #dbeafe; }
+  .card h2 { font-size:16px; color:#1d4ed8; margin-bottom:4px; border-bottom:2px solid #dbeafe; padding-bottom:8px; }
+  .card .table-ref { font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Consolas', monospace; }
+  .card .table-ref b { color:#1d4ed8; }
+  .schema-note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:11.5px; color:#92400e; margin-bottom:18px; font-family:'Consolas', monospace; }
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; }
+  .toolbar input { flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; }
+  .btn { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn-primary { background:#1d4ed8; color:#fff; }
+  .btn-primary:hover { background:#1e40af; }
+  .btn-outline { background:#fff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .btn-outline:hover { background:#eff6ff; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+  th { background:#eff6ff; color:#1d4ed8; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:#f8fafc; }
+  .badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .b-g { background:#dcfce7; color:#15803d; }
+  .b-y { background:#fef9c3; color:#854d0e; }
+  .b-r { background:#fee2e2; color:#b91c1c; }
+  .b-b { background:#dbeafe; color:#1d4ed8; }
+  .action-icon { color:#1d4ed8; cursor:pointer; margin-right:10px; font-size:13px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .form-group.full { grid-column: span 2; }
+  .form-group label { display:block; font-size:13px; margin-bottom:4px; color:#334155; font-weight:600; }
+  .form-group .field-name { font-size:10.5px; color:#94a3b8; font-family:'Consolas', monospace; margin-bottom:5px; display:block; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; }
+  .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+  .footer-actions { display:flex; justify-content:flex-end; gap:10px; }
+  .info-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; background:#f0f6ff; padding:14px 18px; border-radius:8px; font-size:13px; }
+  .info-grid div span { display:block; color:#64748b; font-size:11px; font-family:'Consolas', monospace; }
+  .info-grid div strong { color:#1e293b; font-size:14px; }
+  .alert-box { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#b91c1c; margin-top:12px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  .kpi-box { background:#f0f6ff; border:1px solid #dbeafe; border-radius:8px; padding:16px; }
+  .kpi-box span { display:block; font-size:12px; color:#64748b; margin-bottom:6px; }
+  .kpi-box strong { font-size:22px; color:#1d4ed8; }
+  .kpi-box small { display:block; margin-top:6px; font-size:9.5px; color:#94a3b8; font-family:'Consolas', monospace; }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-mini"><img src="logo-rs.png" alt="Logo RS Dunia Indah"></div>
+      <h1>SIMRS RS Dunia Indah — Modul Billing & Insurance</h1>
+    </div>
+    <div class="user-info">
+      <span>Dian Permata (Kasir)</span>
+      <div class="avatar">D</div>
+      <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="menu-item active">🧾 Invoice</div>
+      <div class="menu-item">💳 Pembayaran</div>
+      <div class="menu-item">🏦 Klaim Asuransi</div>
+      <div class="menu-item" onclick="window.location.href='login.html'">🚪 Logout</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">Beranda &nbsp;›&nbsp; <span>Modul 13. Billing & Insurance</span></div>
+
+      <div class="schema-note">📘 TRD Ref: <b>BILLING_INVOICES, BILLING_INVOICE_ITEMS, PAYMENTS, ADJUSTMENT_REQUESTS, PAYERS, CLAIMS, CLAIM_DOCUMENTS, INSURER_RECEIVABLES, MASTER_TARIFFS</b></div>
+
+      <div class="card">
+        <h2>1. Invoice Pasien</h2>
+        <div class="table-ref">Tabel: <b>BILLING_INVOICES</b> — gross_amount, payer_due*, patient_due* (kolom turunan), invoice_status, billing_status</div>
+        <div class="table-wrap"><table>
+          <tr><th>invoice_no</th><th>pasien</th><th>payer</th><th>gross_amount</th><th>payer_due*</th><th>patient_due*</th><th>status</th></tr>
+          <tr><td>INV-2026-1201</td><td>Siti Rahma</td><td>BPJS Kesehatan</td><td>Rp 2.400.000</td><td>Rp 2.400.000</td><td>Rp 0</td><td><span class="badge b-y">menunggu klaim</span></td></tr>
+          <tr><td>INV-2026-1205</td><td>Tn. Hadi</td><td>Pribadi</td><td>Rp 1.150.000</td><td>Rp 0</td><td>Rp 1.150.000</td><td><span class="badge b-b">belum dibayar</span></td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Rincian Item Invoice</h2>
+        <div class="table-ref">Tabel: <b>BILLING_INVOICE_ITEMS</b> — source_module, source_item_id, tariff_id (→ MASTER_TARIFFS), quantity, subtotal</div>
+        <div class="table-wrap"><table>
+          <tr><th>source_module</th><th>tariff (service_name)</th><th>quantity</th><th>subtotal</th></tr>
+          <tr><td>CPOE / Lab</td><td>Darah Lengkap</td><td>1</td><td>Rp 150.000</td></tr>
+          <tr><td>CPOE / Radiologi</td><td>Rontgen Thorax</td><td>1</td><td>Rp 250.000</td></tr>
+          <tr><td>Farmasi</td><td>Paracetamol 500 mg</td><td>10</td><td>Rp 25.000</td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <h2>3. Pembayaran</h2>
+        <div class="table-ref">Disimpan ke <b>PAYMENTS</b> — invoice_id, received_by, transaction_no, payment_method, amount, payment_status</div>
+        <div class="form-grid">
+          <div class="form-group"><span class="field-name">PAYMENTS.invoice_id</span><label>Invoice</label>
+            <input type="text" placeholder="INV-2026-1205">
+          </div>
+          <div class="form-group"><span class="field-name">PAYMENTS.payment_method</span><label>Metode Pembayaran</label>
+            <select><option>tunai</option><option>debit</option><option>kartu kredit</option><option>transfer</option></select>
+          </div>
+          <div class="form-group"><span class="field-name">PAYMENTS.amount</span><label>Jumlah Dibayar</label>
+            <input type="text" placeholder="Rp 1.150.000">
+          </div>
+          <div class="form-group"><span class="field-name">PAYMENTS.transaction_no</span><label>No. Transaksi</label>
+            <input type="text" placeholder="TRX-2026-7781">
+          </div>
+        </div>
+        <div class="form-actions"><button class="btn btn-outline">Batal</button><button class="btn btn-primary">Simpan Pembayaran</button></div>
+      </div>
+
+      <div class="card">
+        <h2>4. Klaim Asuransi</h2>
+        <div class="table-ref">Tabel: <b>CLAIMS</b> (claim_no, claim_amount, claim_status) → <b>CLAIM_DOCUMENTS</b> → <b>INSURER_RECEIVABLES</b></div>
+        <div class="table-wrap"><table>
+          <tr><th>claim_no</th><th>payer</th><th>claim_amount</th><th>claim_status</th><th>outstanding_amount</th></tr>
+          <tr><td>CLM-2026-077</td><td>BPJS Kesehatan</td><td>Rp 2.400.000</td><td><span class="badge b-y">diverifikasi</span></td><td>Rp 2.400.000</td></tr>
+          <tr><td>CLM-2026-070</td><td>Prudential</td><td>Rp 3.100.000</td><td><span class="badge b-g">dibayar</span></td><td>Rp 0</td></tr>
+        </table></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline">Lihat Riwayat Pembayaran</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

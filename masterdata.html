@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS - Modul Master Data & Configuration</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background:#eef3fa; color:#1e293b; }
+
+  .navbar {
+    background:#1d4ed8; color:#fff; padding:16px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  }
+  .navbar .brand { display:flex; align-items:center; gap:12px; }
+  .navbar .brand-mini {
+    width:32px; height:32px; background:#fff; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px;
+  }
+  .navbar .brand-mini img { max-width:100%; max-height:100%; object-fit:contain; }
+  .navbar h1 { font-size:18px; font-weight:600; }
+  .navbar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .navbar .avatar {
+    width:32px; height:32px; border-radius:50%; background:#3b82f6;
+    display:flex; align-items:center; justify-content:center; font-weight:bold;
+  }
+  .navbar .logout-btn {
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4);
+    color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;
+  }
+  .navbar .logout-btn:hover { background:rgba(255,255,255,0.25); }
+
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+  .sidebar { width:230px; background:#1e3a8a; color:#dbeafe; padding:20px 0; }
+  .sidebar .menu-item { padding:12px 24px; cursor:pointer; font-size:14px; border-left:4px solid transparent; }
+  .sidebar .menu-item.active { background:#2563eb; border-left:4px solid #93c5fd; color:#fff; font-weight:600; }
+  .sidebar .menu-item:hover { background:#2547a0; }
+
+  .content { flex:1; padding:28px; min-width:0; }
+  .breadcrumb { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .breadcrumb span { color:#1d4ed8; font-weight:600; }
+
+  .card {
+    background:#fff; border-radius:10px; padding:22px; margin-bottom:22px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #dbeafe;
+  }
+  .card h2 {
+    font-size:16px; color:#1d4ed8; margin-bottom:4px;
+    border-bottom:2px solid #dbeafe; padding-bottom:8px;
+  }
+  .card .table-ref { font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Consolas', monospace; }
+  .card .table-ref b { color:#1d4ed8; }
+
+  .schema-note {
+    background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
+    padding:10px 14px; font-size:11.5px; color:#92400e; margin-bottom:18px;
+    font-family:'Consolas', monospace;
+  }
+
+  .master-types { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:6px; }
+  .master-type {
+    background:#f8fafc; border:1.5px solid #dbeafe; border-radius:8px;
+    padding:12px 6px; text-align:center; cursor:pointer; font-size:12.5px; color:#1e3a8a;
+  }
+  .master-type:hover, .master-type.selected { background:#dbeafe; border-color:#1d4ed8; font-weight:600; }
+  .master-type .icon { font-size:20px; display:block; margin-bottom:4px; }
+  .master-type .val { display:block; font-size:9.5px; color:#94a3b8; font-family:'Consolas', monospace; margin-top:2px; font-weight:400; }
+
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; }
+  .toolbar input { flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; }
+  .btn { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn-primary { background:#1d4ed8; color:#fff; }
+  .btn-primary:hover { background:#1e40af; }
+  .btn-outline { background:#fff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .btn-outline:hover { background:#eff6ff; }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+  th { background:#eff6ff; color:#1d4ed8; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:#f8fafc; }
+
+  .status-badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .status-aktif { background:#dcfce7; color:#15803d; }
+  .status-nonaktif { background:#fee2e2; color:#b91c1c; }
+  .action-icon { color:#1d4ed8; cursor:pointer; margin-right:10px; font-size:13px; }
+
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; margin-bottom:4px; color:#334155; font-weight:600; }
+  .form-group .field-name { font-size:10.5px; color:#94a3b8; font-family:'Consolas', monospace; margin-bottom:5px; display:block; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;
+  }
+  .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+  .footer-actions { display:flex; justify-content:flex-end; gap:10px; }
+
+  code.k { background:#f0f6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px; font-family:'Consolas', monospace; font-size:12px; }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-mini"><img src="logo-rs.png" alt="Logo RS Dunia Indah"></div>
+      <h1>SIMRS RS Dunia Indah — Modul Master Data & Configuration</h1>
+    </div>
+    <div class="user-info">
+      <span>Bayu Nugroho (Admin Sistem - IT)</span>
+      <div class="avatar">B</div>
+      <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="menu-item active">🗂️ Kelola Master Data</div>
+      <div class="menu-item">⚙️ Konfigurasi Sistem</div>
+      <div class="menu-item">🧾 Audit Trail</div>
+      <div class="menu-item" onclick="window.location.href='login.html'">🚪 Logout</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">Beranda &nbsp;›&nbsp; <span>Modul 16. Master Data & Configuration</span></div>
+
+      <div class="schema-note">
+        📘 TRD Ref: <b>MASTER_DOCTORS, MASTER_POLYCLINICS, MASTER_SCHEDULES, MASTER_ICD10, MASTER_LAB_TESTS, MASTER_RAD_TESTS, MASTER_DRUGS, MASTER_ROOMS, MASTER_TARIFFS, SYSTEM_CONFIG</b> — data induk dipakai modul lain via foreign key
+      </div>
+
+      <!-- Pilih jenis master -->
+      <div class="card">
+        <h2>1. Pilih Jenis Master Data</h2>
+        <div class="table-ref">Setiap pilihan = satu tabel MASTER_* di TRD</div>
+        <div class="master-types">
+          <div class="master-type selected"><span class="icon">👨‍⚕️</span>Dokter<span class="val">MASTER_DOCTORS</span></div>
+          <div class="master-type"><span class="icon">🏢</span>Poliklinik<span class="val">MASTER_POLYCLINICS</span></div>
+          <div class="master-type"><span class="icon">📅</span>Jadwal Dokter<span class="val">MASTER_SCHEDULES</span></div>
+          <div class="master-type"><span class="icon">🛏️</span>Ruangan<span class="val">MASTER_ROOMS</span></div>
+          <div class="master-type"><span class="icon">💰</span>Tarif<span class="val">MASTER_TARIFFS</span></div>
+          <div class="master-type"><span class="icon">📄</span>ICD-10<span class="val">MASTER_ICD10</span></div>
+          <div class="master-type"><span class="icon">🧪</span>Tes Lab<span class="val">MASTER_LAB_TESTS</span></div>
+          <div class="master-type"><span class="icon">📷</span>Tes Radiologi<span class="val">MASTER_RAD_TESTS</span></div>
+          <div class="master-type"><span class="icon">💊</span>Obat<span class="val">MASTER_DRUGS</span></div>
+          <div class="master-type"><span class="icon">⚙️</span>Konfigurasi<span class="val">SYSTEM_CONFIG</span></div>
+        </div>
+      </div>
+
+      <!-- Kelola data -->
+      <div class="card">
+        <h2>2. Kelola Data Dokter</h2>
+        <div class="table-ref">Tabel: <b>MASTER_DOCTORS</b> — doctor_id, user_id (FK USERS), doctor_name, specialty, is_active</div>
+        <div class="toolbar">
+          <input type="text" placeholder="Cari doctor_name / specialty...">
+          <button class="btn btn-primary">+ Tambah Data</button>
+        </div>
+        <div class="table-wrap">
+        <table>
+          <tr>
+            <th>doctor_id</th><th>user_id</th><th>doctor_name</th><th>specialty</th><th>is_active</th><th>Aksi</th>
+          </tr>
+          <tr>
+            <td>1</td><td>12 (dokter)</td><td>dr. Andi Wijaya, Sp.PD</td><td>Penyakit Dalam</td>
+            <td><span class="status-badge status-aktif">true</span></td>
+            <td><span class="action-icon">✏️ Edit</span><span class="action-icon">🚫 Nonaktifkan</span></td>
+          </tr>
+          <tr>
+            <td>2</td><td>13</td><td>dr. Rina Sari, Sp.A</td><td>Anak</td>
+            <td><span class="status-badge status-aktif">true</span></td>
+            <td><span class="action-icon">✏️ Edit</span><span class="action-icon">🚫 Nonaktifkan</span></td>
+          </tr>
+          <tr>
+            <td>3</td><td>14</td><td>dr. Budi Santoso, Sp.JP</td><td>Jantung</td>
+            <td><span class="status-badge status-nonaktif">false</span></td>
+            <td><span class="action-icon">✏️ Edit</span><span class="action-icon">✅ Aktifkan</span></td>
+          </tr>
+        </table>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="card">
+        <h2>3. Tambah / Edit Data Dokter</h2>
+        <div class="table-ref">Disimpan ke <b>MASTER_DOCTORS</b>; aksi tercatat di <b>AUDIT_LOGS</b></div>
+        <div class="form-grid">
+          <div class="form-group">
+            <span class="field-name">MASTER_DOCTORS.doctor_name</span>
+            <label>Nama Dokter</label>
+            <input type="text" placeholder="Masukkan nama dokter">
+          </div>
+          <div class="form-group">
+            <span class="field-name">MASTER_DOCTORS.specialty</span>
+            <label>Spesialisasi</label>
+            <select><option>Penyakit Dalam</option><option>Anak</option><option>Jantung</option><option>Bedah</option></select>
+          </div>
+          <div class="form-group">
+            <span class="field-name">MASTER_DOCTORS.user_id → USERS.username</span>
+            <label>Akun Pengguna Terkait</label>
+            <select><option>dokter</option><option>dr.rina</option><option>dr.budi</option></select>
+          </div>
+          <div class="form-group">
+            <span class="field-name">MASTER_DOCTORS.is_active (boolean)</span>
+            <label>Status</label>
+            <select><option>Aktif (true)</option><option>Nonaktif (false)</option></select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-outline">Batal</button>
+          <button class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+      </div>
+
+      <!-- Jadwal -->
+      <div class="card">
+        <h2>4. Jadwal Dokter</h2>
+        <div class="table-ref">Tabel: <b>MASTER_SCHEDULES</b> — doctor_id, polyclinic_id, day_of_week, start_time, end_time, quota, filled (kolom turunan, dihitung sistem)</div>
+        <div class="table-wrap">
+        <table>
+          <tr><th>schedule_id</th><th>doctor</th><th>polyclinic</th><th>day_of_week</th><th>start_time</th><th>end_time</th><th>quota</th><th>filled*</th></tr>
+          <tr><td>1</td><td>dr. Andi Wijaya, Sp.PD</td><td>Poli Interna</td><td>Senin</td><td>08:00</td><td>12:00</td><td>20</td><td>14</td></tr>
+          <tr><td>2</td><td>dr. Rina Sari, Sp.A</td><td>Poli Anak</td><td>Selasa</td><td>09:00</td><td>13:00</td><td>15</td><td>9</td></tr>
+        </table>
+        </div>
+      </div>
+
+      <!-- System Config + Roles -->
+      <div class="card">
+        <h2>5. Konfigurasi Sistem & Hak Akses</h2>
+        <div class="table-ref">Tabel: <b>SYSTEM_CONFIG</b> (config_key UQ, config_value) · <b>ROLES</b> → <b>ROLE_PERMISSIONS</b> → <b>PERMISSIONS</b> (permission_code, module, action)</div>
+        <div class="table-wrap">
+        <table>
+          <tr><th>config_key</th><th>config_value</th><th>updated_at</th><th>Aksi</th></tr>
+          <tr><td><code class="k">hospital_name</code></td><td>RS Dunia Indah</td><td>2026-10-01 09:00</td><td><span class="action-icon">✏️ Edit</span></td></tr>
+          <tr><td><code class="k">queue_prefix</code></td><td>A</td><td>2026-10-01 09:00</td><td><span class="action-icon">✏️ Edit</span></td></tr>
+          <tr><td><code class="k">session_timeout_min</code></td><td>30</td><td>2026-10-05 14:20</td><td><span class="action-icon">✏️ Edit</span></td></tr>
+        </table>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline">Lihat Audit Trail</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

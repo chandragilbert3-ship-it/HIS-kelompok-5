@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS - Modul Inventory & Warehouse</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background:#eef3fa; color:#1e293b; }
+  .navbar { background:#1d4ed8; color:#fff; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+  .navbar .brand { display:flex; align-items:center; gap:12px; }
+  .navbar .brand-mini { width:32px; height:32px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px; }
+  .navbar .brand-mini img { max-width:100%; max-height:100%; object-fit:contain; }
+  .navbar h1 { font-size:18px; font-weight:600; }
+  .navbar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .navbar .avatar { width:32px; height:32px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+  .navbar .logout-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; }
+  .navbar .logout-btn:hover { background:rgba(255,255,255,0.25); }
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+  .sidebar { width:230px; background:#1e3a8a; color:#dbeafe; padding:20px 0; flex-shrink:0; }
+  .sidebar .menu-item { padding:12px 24px; cursor:pointer; font-size:14px; border-left:4px solid transparent; }
+  .sidebar .menu-item.active { background:#2563eb; border-left:4px solid #93c5fd; color:#fff; font-weight:600; }
+  .sidebar .menu-item:hover { background:#2547a0; }
+  .content { flex:1; padding:28px; min-width:0; }
+  .breadcrumb { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .breadcrumb span { color:#1d4ed8; font-weight:600; }
+  .card { background:#fff; border-radius:10px; padding:22px; margin-bottom:22px; box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #dbeafe; }
+  .card h2 { font-size:16px; color:#1d4ed8; margin-bottom:4px; border-bottom:2px solid #dbeafe; padding-bottom:8px; }
+  .card .table-ref { font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Consolas', monospace; }
+  .card .table-ref b { color:#1d4ed8; }
+  .schema-note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:11.5px; color:#92400e; margin-bottom:18px; font-family:'Consolas', monospace; }
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; }
+  .toolbar input { flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; }
+  .btn { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn-primary { background:#1d4ed8; color:#fff; }
+  .btn-primary:hover { background:#1e40af; }
+  .btn-outline { background:#fff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .btn-outline:hover { background:#eff6ff; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+  th { background:#eff6ff; color:#1d4ed8; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:#f8fafc; }
+  .badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .b-g { background:#dcfce7; color:#15803d; }
+  .b-y { background:#fef9c3; color:#854d0e; }
+  .b-r { background:#fee2e2; color:#b91c1c; }
+  .b-b { background:#dbeafe; color:#1d4ed8; }
+  .action-icon { color:#1d4ed8; cursor:pointer; margin-right:10px; font-size:13px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .form-group.full { grid-column: span 2; }
+  .form-group label { display:block; font-size:13px; margin-bottom:4px; color:#334155; font-weight:600; }
+  .form-group .field-name { font-size:10.5px; color:#94a3b8; font-family:'Consolas', monospace; margin-bottom:5px; display:block; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; }
+  .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+  .footer-actions { display:flex; justify-content:flex-end; gap:10px; }
+  .info-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; background:#f0f6ff; padding:14px 18px; border-radius:8px; font-size:13px; }
+  .info-grid div span { display:block; color:#64748b; font-size:11px; font-family:'Consolas', monospace; }
+  .info-grid div strong { color:#1e293b; font-size:14px; }
+  .alert-box { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#b91c1c; margin-top:12px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  .kpi-box { background:#f0f6ff; border:1px solid #dbeafe; border-radius:8px; padding:16px; }
+  .kpi-box span { display:block; font-size:12px; color:#64748b; margin-bottom:6px; }
+  .kpi-box strong { font-size:22px; color:#1d4ed8; }
+  .kpi-box small { display:block; margin-top:6px; font-size:9.5px; color:#94a3b8; font-family:'Consolas', monospace; }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-mini"><img src="logo-rs.png" alt="Logo RS Dunia Indah"></div>
+      <h1>SIMRS RS Dunia Indah — Modul Inventory & Warehouse</h1>
+    </div>
+    <div class="user-info">
+      <span>Rudi Hartono (Petugas Gudang)</span>
+      <div class="avatar">R</div>
+      <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="menu-item active">📦 Stok Barang</div>
+      <div class="menu-item">📥 Penerimaan Barang</div>
+      <div class="menu-item">📤 Permintaan Unit</div>
+      <div class="menu-item">🧮 Stock Opname</div>
+      <div class="menu-item" onclick="window.location.href='login.html'">🚪 Logout</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">Beranda &nbsp;›&nbsp; <span>Modul 14. Inventory & Warehouse</span></div>
+
+      <div class="schema-note">📘 TRD Ref: <b>INVENTORY_ITEMS, STOCK_BATCHES, STOCK_TRANSACTIONS, WAREHOUSES, WAREHOUSE_LOCATIONS, SUPPLIERS, GOODS_RECEIPTS, INVENTORY_REQUESTS, STOCK_OPNAMES</b></div>
+
+      <div class="card">
+        <h2>1. Stok Barang</h2>
+        <div class="table-ref">Tabel: <b>STOCK_BATCHES</b> join <b>INVENTORY_ITEMS</b> — batch_no, expiry_date, quantity_on_hand, status</div>
+        <div class="toolbar"><input type="text" placeholder="Cari item_code / item_name..."><button class="btn btn-primary">Cari Stok</button></div>
+        <div class="table-wrap"><table>
+          <tr><th>item_code</th><th>item_name</th><th>batch_no</th><th>expiry_date</th><th>quantity_on_hand</th><th>min_stock</th><th>status</th></tr>
+          <tr><td>OB-001</td><td>Paracetamol 500 mg</td><td>B2026-A1</td><td>2027-08-01</td><td>1.200</td><td>500</td><td><span class="badge b-g">tersedia</span></td></tr>
+          <tr><td>OB-014</td><td>Amlodipin 5 mg</td><td>B2026-C7</td><td>2026-12-15</td><td>90</td><td>200</td><td><span class="badge b-r">di bawah minimum</span></td></tr>
+          <tr><td>AL-203</td><td>Kasa steril</td><td>B2026-K3</td><td>2028-01-10</td><td>640</td><td>300</td><td><span class="badge b-g">tersedia</span></td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Penerimaan Barang</h2>
+        <div class="table-ref">Disimpan ke <b>GOODS_RECEIPTS</b> dan <b>GOODS_RECEIPT_ITEMS</b> — supplier_id, warehouse_id, batch_no, expiry_date, quantity</div>
+        <div class="form-grid">
+          <div class="form-group"><span class="field-name">GOODS_RECEIPTS.supplier_id</span><label>Supplier</label>
+            <select><option>PT Sehat Farma</option><option>PT Medika Utama</option></select>
+          </div>
+          <div class="form-group"><span class="field-name">GOODS_RECEIPTS.warehouse_id</span><label>Gudang</label>
+            <select><option>Gudang Farmasi</option><option>Gudang Umum</option></select>
+          </div>
+          <div class="form-group"><span class="field-name">GOODS_RECEIPT_ITEMS.inventory_item_id</span><label>Item</label>
+            <input type="text" placeholder="OB-014 — Amlodipin 5 mg">
+          </div>
+          <div class="form-group"><span class="field-name">GOODS_RECEIPT_ITEMS.batch_no</span><label>No. Batch</label>
+            <input type="text" placeholder="B2026-C9">
+          </div>
+          <div class="form-group"><span class="field-name">GOODS_RECEIPT_ITEMS.expiry_date</span><label>Tanggal Kedaluwarsa</label>
+            <input type="text" placeholder="2028-03-31">
+          </div>
+          <div class="form-group"><span class="field-name">GOODS_RECEIPT_ITEMS.quantity</span><label>Jumlah</label>
+            <input type="text" placeholder="500">
+          </div>
+        </div>
+        <div class="form-actions"><button class="btn btn-outline">Batal</button><button class="btn btn-primary">Simpan Penerimaan</button></div>
+      </div>
+
+      <div class="card">
+        <h2>3. Permintaan Unit &amp; Stock Opname</h2>
+        <div class="table-ref">Tabel: <b>INVENTORY_REQUESTS</b> (requesting_unit, status) dan <b>STOCK_OPNAME_ITEMS</b> (book_qty, physical_qty, difference*)</div>
+        <div class="table-wrap"><table>
+          <tr><th>jenis</th><th>unit / item</th><th>book_qty</th><th>physical_qty</th><th>difference*</th><th>status</th></tr>
+          <tr><td>permintaan</td><td>Farmasi — Amlodipin 5 mg</td><td>-</td><td>-</td><td>-</td><td><span class="badge b-y">diproses</span></td></tr>
+          <tr><td>opname</td><td>Paracetamol 500 mg</td><td>1.200</td><td>1.198</td><td>-2</td><td><span class="badge b-b">draft</span></td></tr>
+          <tr><td>opname</td><td>Kasa steril</td><td>640</td><td>640</td><td>0</td><td><span class="badge b-g">selesai</span></td></tr>
+        </table></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline">Lihat Transaksi Stok</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

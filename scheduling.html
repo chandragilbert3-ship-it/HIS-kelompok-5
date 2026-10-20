@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS - Modul Scheduling & Appointment</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background:#eef3fa; color:#1e293b; }
+  .navbar { background:#1d4ed8; color:#fff; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+  .navbar .brand { display:flex; align-items:center; gap:12px; }
+  .navbar .brand-mini { width:32px; height:32px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px; }
+  .navbar .brand-mini img { max-width:100%; max-height:100%; object-fit:contain; }
+  .navbar h1 { font-size:18px; font-weight:600; }
+  .navbar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .navbar .avatar { width:32px; height:32px; border-radius:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+  .navbar .logout-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; }
+  .navbar .logout-btn:hover { background:rgba(255,255,255,0.25); }
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+  .sidebar { width:230px; background:#1e3a8a; color:#dbeafe; padding:20px 0; flex-shrink:0; }
+  .sidebar .menu-item { padding:12px 24px; cursor:pointer; font-size:14px; border-left:4px solid transparent; }
+  .sidebar .menu-item.active { background:#2563eb; border-left:4px solid #93c5fd; color:#fff; font-weight:600; }
+  .sidebar .menu-item:hover { background:#2547a0; }
+  .content { flex:1; padding:28px; min-width:0; }
+  .breadcrumb { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .breadcrumb span { color:#1d4ed8; font-weight:600; }
+  .card { background:#fff; border-radius:10px; padding:22px; margin-bottom:22px; box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #dbeafe; }
+  .card h2 { font-size:16px; color:#1d4ed8; margin-bottom:4px; border-bottom:2px solid #dbeafe; padding-bottom:8px; }
+  .card .table-ref { font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Consolas', monospace; }
+  .card .table-ref b { color:#1d4ed8; }
+  .schema-note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:11.5px; color:#92400e; margin-bottom:18px; font-family:'Consolas', monospace; }
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; }
+  .toolbar input { flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; }
+  .btn { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn-primary { background:#1d4ed8; color:#fff; }
+  .btn-primary:hover { background:#1e40af; }
+  .btn-outline { background:#fff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .btn-outline:hover { background:#eff6ff; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+  th { background:#eff6ff; color:#1d4ed8; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:#f8fafc; }
+  .badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .b-g { background:#dcfce7; color:#15803d; }
+  .b-y { background:#fef9c3; color:#854d0e; }
+  .b-r { background:#fee2e2; color:#b91c1c; }
+  .b-b { background:#dbeafe; color:#1d4ed8; }
+  .action-icon { color:#1d4ed8; cursor:pointer; margin-right:10px; font-size:13px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .form-group.full { grid-column: span 2; }
+  .form-group label { display:block; font-size:13px; margin-bottom:4px; color:#334155; font-weight:600; }
+  .form-group .field-name { font-size:10.5px; color:#94a3b8; font-family:'Consolas', monospace; margin-bottom:5px; display:block; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; }
+  .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+  .footer-actions { display:flex; justify-content:flex-end; gap:10px; }
+  .info-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; background:#f0f6ff; padding:14px 18px; border-radius:8px; font-size:13px; }
+  .info-grid div span { display:block; color:#64748b; font-size:11px; font-family:'Consolas', monospace; }
+  .info-grid div strong { color:#1e293b; font-size:14px; }
+  .alert-box { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#b91c1c; margin-top:12px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  .kpi-box { background:#f0f6ff; border:1px solid #dbeafe; border-radius:8px; padding:16px; }
+  .kpi-box span { display:block; font-size:12px; color:#64748b; margin-bottom:6px; }
+  .kpi-box strong { font-size:22px; color:#1d4ed8; }
+  .kpi-box small { display:block; margin-top:6px; font-size:9.5px; color:#94a3b8; font-family:'Consolas', monospace; }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-mini"><img src="logo-rs.png" alt="Logo RS Dunia Indah"></div>
+      <h1>SIMRS RS Dunia Indah — Modul Scheduling & Appointment</h1>
+    </div>
+    <div class="user-info">
+      <span>Maya Anggraini (Petugas Penjadwalan)</span>
+      <div class="avatar">M</div>
+      <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="menu-item active">📅 Jadwal Dokter</div>
+      <div class="menu-item">📝 Booking Appointment</div>
+      <div class="menu-item">📋 Daftar Appointment</div>
+      <div class="menu-item" onclick="window.location.href='login.html'">🚪 Logout</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">Beranda &nbsp;›&nbsp; <span>Modul 3. Scheduling & Appointment</span></div>
+
+      <div class="schema-note">📘 TRD Ref: <b>MASTER_SCHEDULES, APPOINTMENTS</b> (membaca PATIENTS, MASTER_DOCTORS, MASTER_POLYCLINICS)</div>
+
+      <div class="card">
+        <h2>1. Jadwal Dokter Tersedia</h2>
+        <div class="table-ref">Tabel: <b>MASTER_SCHEDULES</b> — day_of_week, start_time, end_time, quota, filled* (kolom turunan)</div>
+        <div class="toolbar"><input type="text" placeholder="Cari dokter / poli..."><button class="btn btn-primary">Cari Jadwal</button></div>
+        <div class="table-wrap"><table>
+          <tr><th>schedule_id</th><th>doctor</th><th>polyclinic</th><th>day_of_week</th><th>start_time</th><th>end_time</th><th>quota</th><th>filled*</th></tr>
+          <tr><td>1</td><td>dr. Andi Wijaya, Sp.PD</td><td>Poli Interna</td><td>Senin</td><td>08:00</td><td>12:00</td><td>20</td><td>14</td></tr>
+          <tr><td>2</td><td>dr. Rina Sari, Sp.A</td><td>Poli Anak</td><td>Selasa</td><td>09:00</td><td>13:00</td><td>15</td><td>9</td></tr>
+          <tr><td>3</td><td>dr. Budi Santoso, Sp.JP</td><td>Poli Jantung</td><td>Rabu</td><td>10:00</td><td>14:00</td><td>12</td><td>12 (penuh)</td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <h2>2. Booking Appointment</h2>
+        <div class="table-ref">Disimpan ke <b>APPOINTMENTS</b> — patient_id, schedule_id, appointment_date, booking_code (UQ), status</div>
+        <div class="form-grid">
+          <div class="form-group"><span class="field-name">APPOINTMENTS.patient_id → PATIENTS.no_rm</span><label>Pasien (No. RM / Nama)</label>
+            <input type="text" placeholder="00-12-3456 — Siti Rahma">
+          </div>
+          <div class="form-group"><span class="field-name">APPOINTMENTS.schedule_id</span><label>Jadwal Dokter</label>
+            <select><option>Senin 08:00 — dr. Andi Wijaya (Interna)</option><option>Selasa 09:00 — dr. Rina Sari (Anak)</option></select>
+          </div>
+          <div class="form-group"><span class="field-name">APPOINTMENTS.appointment_date</span><label>Tanggal Appointment</label>
+            <input type="text" placeholder="26 Okt 2026">
+          </div>
+          <div class="form-group"><span class="field-name">APPOINTMENTS.booking_code (otomatis)</span><label>Kode Booking</label>
+            <input type="text" placeholder="BK-2026-09012">
+          </div>
+        </div>
+        <div class="form-actions"><button class="btn btn-outline">Batal</button><button class="btn btn-primary">Simpan Booking (status = &#x27;booked&#x27;)</button></div>
+      </div>
+
+      <div class="card">
+        <h2>3. Daftar Appointment</h2>
+        <div class="table-ref">Tabel: <b>APPOINTMENTS</b> join <b>PATIENTS</b></div>
+        <div class="table-wrap"><table>
+          <tr><th>booking_code</th><th>pasien</th><th>appointment_date</th><th>jadwal</th><th>status</th><th>Aksi</th></tr>
+          <tr><td>BK-09012</td><td>Siti Rahma</td><td>26 Okt 2026</td><td>Interna — Senin</td><td><span class="badge b-b">booked</span></td><td><span class="action-icon">✏️ Ubah</span><span class="action-icon">❌ Batalkan</span></td></tr>
+          <tr><td>BK-09008</td><td>Andi Pratama</td><td>21 Okt 2026</td><td>Anak — Selasa</td><td><span class="badge b-g">checked_in</span></td><td><span class="action-icon">🖨️ Cetak</span></td></tr>
+          <tr><td>BK-09001</td><td>Rina Marlina</td><td>19 Okt 2026</td><td>Jantung — Rabu</td><td><span class="badge b-r">cancelled</span></td><td>-</td></tr>
+        </table></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline">Lihat Daftar Appointment</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

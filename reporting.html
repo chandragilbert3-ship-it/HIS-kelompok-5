@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMRS - Modul Reporting & Dashboard</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background:#eef3fa; color:#1e293b; }
+
+  .navbar {
+    background:#1d4ed8; color:#fff; padding:16px 32px;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  }
+  .navbar .brand { display:flex; align-items:center; gap:12px; }
+  .navbar .brand-mini {
+    width:32px; height:32px; background:#fff; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px;
+  }
+  .navbar .brand-mini img { max-width:100%; max-height:100%; object-fit:contain; }
+  .navbar h1 { font-size:18px; font-weight:600; }
+  .navbar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .navbar .avatar {
+    width:32px; height:32px; border-radius:50%; background:#3b82f6;
+    display:flex; align-items:center; justify-content:center; font-weight:bold;
+  }
+  .navbar .logout-btn {
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4);
+    color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;
+  }
+  .navbar .logout-btn:hover { background:rgba(255,255,255,0.25); }
+
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+  .sidebar { width:230px; background:#1e3a8a; color:#dbeafe; padding:20px 0; }
+  .sidebar .menu-item { padding:12px 24px; cursor:pointer; font-size:14px; border-left:4px solid transparent; }
+  .sidebar .menu-item.active { background:#2563eb; border-left:4px solid #93c5fd; color:#fff; font-weight:600; }
+  .sidebar .menu-item:hover { background:#2547a0; }
+
+  .content { flex:1; padding:28px; min-width:0; }
+  .breadcrumb { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .breadcrumb span { color:#1d4ed8; font-weight:600; }
+
+  .card {
+    background:#fff; border-radius:10px; padding:22px; margin-bottom:22px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.08); border:1px solid #dbeafe;
+  }
+  .card h2 {
+    font-size:16px; color:#1d4ed8; margin-bottom:4px;
+    border-bottom:2px solid #dbeafe; padding-bottom:8px;
+  }
+  .card .table-ref { font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Consolas', monospace; }
+  .card .table-ref b { color:#1d4ed8; }
+
+  .schema-note {
+    background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
+    padding:10px 14px; font-size:11.5px; color:#92400e; margin-bottom:18px;
+    font-family:'Consolas', monospace;
+  }
+
+  .filter-bar { display:flex; gap:10px; flex-wrap:wrap; }
+  .filter-bar select, .filter-bar input { padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; }
+  .btn { padding:10px 18px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  .btn-primary { background:#1d4ed8; color:#fff; }
+  .btn-primary:hover { background:#1e40af; }
+  .btn-outline { background:#fff; color:#1d4ed8; border:1px solid #1d4ed8; }
+  .btn-outline:hover { background:#eff6ff; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  .kpi-box { background:#f0f6ff; border:1px solid #dbeafe; border-radius:8px; padding:16px; }
+  .kpi-box span { display:block; font-size:12px; color:#64748b; margin-bottom:6px; }
+  .kpi-box strong { font-size:22px; color:#1d4ed8; }
+  .kpi-box small { display:block; margin-top:4px; font-size:11px; color:#15803d; }
+  .kpi-box .src { display:block; margin-top:6px; font-size:9.5px; color:#94a3b8; font-family:'Consolas', monospace; }
+
+  .chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+  .chart-box { background:#f8fafc; border:1px solid #dbeafe; border-radius:8px; padding:16px; }
+  .chart-box h3 { font-size:13px; color:#334155; margin-bottom:12px; }
+
+  /* Bar chart sederhana (CSS) */
+  .bars { display:flex; align-items:flex-end; gap:14px; height:150px; padding-top:6px; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar { width:100%; max-width:38px; background:linear-gradient(180deg,#3b82f6,#1d4ed8); border-radius:5px 5px 0 0; }
+  .bar-col small { font-size:10.5px; color:#64748b; margin-top:5px; }
+  .bar-col em { font-size:10px; color:#1d4ed8; font-style:normal; font-weight:700; margin-bottom:3px; }
+
+  .hbar-row { margin-bottom:10px; font-size:12px; }
+  .hbar-row .lbl { display:flex; justify-content:space-between; color:#334155; margin-bottom:3px; }
+  .hbar-track { background:#e2e8f0; border-radius:6px; height:8px; }
+  .hbar-fill { background:#1d4ed8; height:8px; border-radius:6px; }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e2e8f0; }
+  th { background:#eff6ff; color:#1d4ed8; font-size:11px; text-transform:uppercase; }
+  tr:hover { background:#f8fafc; }
+  .footer-actions { display:flex; justify-content:flex-end; gap:10px; }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-mini"><img src="logo-rs.png" alt="Logo RS Dunia Indah"></div>
+      <h1>SIMRS RS Dunia Indah — Modul Reporting & Dashboard</h1>
+    </div>
+    <div class="user-info">
+      <span>Dewi Lestari (Manajemen)</span>
+      <div class="avatar">D</div>
+      <button class="logout-btn" onclick="window.location.href='login.html'">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="menu-item active">📊 Dashboard Utama</div>
+      <div class="menu-item">📈 Laporan Kunjungan</div>
+      <div class="menu-item">💵 Laporan Pendapatan</div>
+      <div class="menu-item">🛏️ BOR & LOS</div>
+      <div class="menu-item">🩺 Statistik Penyakit</div>
+      <div class="menu-item" onclick="window.location.href='login.html'">🚪 Logout</div>
+    </div>
+
+    <div class="content">
+      <div class="breadcrumb">Beranda &nbsp;›&nbsp; <span>Modul 15. Reporting & Dashboard</span></div>
+
+      <div class="schema-note">
+        📘 TRD Ref: modul ini <b>tidak punya tabel transaksi sendiri</b> — hanya membaca & mengagregasi <b>VISITS + BILLING_INVOICES + INPATIENT_ADMISSIONS + DIAGNOSES + ORDERS</b>
+      </div>
+
+      <div class="card">
+        <h2>1. Pilih Periode & Jenis Laporan</h2>
+        <div class="table-ref">Filter diterapkan pada <b>VISITS.visit_date</b> / <b>BILLING_INVOICES</b> / <b>INPATIENT_ADMISSIONS.admitted_at</b></div>
+        <div class="filter-bar">
+          <select>
+            <option>Laporan Kunjungan</option>
+            <option>Laporan Pendapatan</option>
+            <option>BOR & LOS</option>
+            <option>Statistik Penyakit</option>
+          </select>
+          <input type="text" placeholder="Tanggal Mulai">
+          <input type="text" placeholder="Tanggal Akhir">
+          <button class="btn btn-primary">Terapkan Filter</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Dashboard Indikator Utama</h2>
+        <div class="table-ref">Dihitung otomatis oleh sistem (kolom turunan)</div>
+        <div class="kpi-grid">
+          <div class="kpi-box"><span>Total Kunjungan</span><strong>1.284</strong><small>▲ 8% dari bulan lalu</small><span class="src">COUNT(VISITS.visit_id)</span></div>
+          <div class="kpi-box"><span>Total Pendapatan</span><strong>Rp 892 Jt</strong><small>▲ 5% dari bulan lalu</small><span class="src">SUM(BILLING_INVOICES.gross_amount)</span></div>
+          <div class="kpi-box"><span>BOR (Bed Occupancy Rate)</span><strong>78%</strong><small>▼ 2% dari bulan lalu</small><span class="src">BEDS.status / INPATIENT_ADMISSIONS</span></div>
+          <div class="kpi-box"><span>LOS (Length of Stay)</span><strong>4,2 Hari</strong><small>▲ 0,3 hari</small><span class="src">AVG(discharged_at − admitted_at)</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>3. Grafik & Visualisasi</h2>
+        <div class="chart-grid">
+          <div class="chart-box">
+            <h3>Tren Kunjungan per Bulan <small style="color:#94a3b8;font-family:Consolas,monospace">(VISITS.visit_date)</small></h3>
+            <div class="bars">
+              <div class="bar-col"><em>980</em><div class="bar" style="height:62%"></div><small>Mei</small></div>
+              <div class="bar-col"><em>1.040</em><div class="bar" style="height:68%"></div><small>Jun</small></div>
+              <div class="bar-col"><em>1.120</em><div class="bar" style="height:74%"></div><small>Jul</small></div>
+              <div class="bar-col"><em>1.190</em><div class="bar" style="height:80%"></div><small>Agu</small></div>
+              <div class="bar-col"><em>1.190</em><div class="bar" style="height:80%"></div><small>Sep</small></div>
+              <div class="bar-col"><em>1.284</em><div class="bar" style="height:90%"></div><small>Okt</small></div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <h3>Top Diagnosis <small style="color:#94a3b8;font-family:Consolas,monospace">(DIAGNOSES.icd10_code)</small></h3>
+            <div class="hbar-row"><div class="lbl"><span>I10 Hipertensi</span><b>186</b></div><div class="hbar-track"><div class="hbar-fill" style="width:90%"></div></div></div>
+            <div class="hbar-row"><div class="lbl"><span>E11 Diabetes Melitus T2</span><b>142</b></div><div class="hbar-track"><div class="hbar-fill" style="width:70%"></div></div></div>
+            <div class="hbar-row"><div class="lbl"><span>J18 Pneumonia</span><b>97</b></div><div class="hbar-track"><div class="hbar-fill" style="width:48%"></div></div></div>
+            <div class="hbar-row"><div class="lbl"><span>A09 Gastroenteritis</span><b>81</b></div><div class="hbar-track"><div class="hbar-fill" style="width:40%"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Detail Laporan Kunjungan</h2>
+        <div class="table-ref">Join: <b>VISITS</b> + <b>MASTER_POLYCLINICS</b> + <b>BILLING_INVOICES</b></div>
+        <div class="table-wrap">
+        <table>
+          <tr><th>visit_date</th><th>Poli / Unit</th><th>service_type</th><th>Jumlah Kunjungan</th><th>gross_amount</th></tr>
+          <tr><td>05 Okt 2026</td><td>Poli Interna</td><td>Rawat Jalan</td><td>142</td><td>Rp 38.500.000</td></tr>
+          <tr><td>05 Okt 2026</td><td>Poli Anak</td><td>Rawat Jalan</td><td>98</td><td>Rp 21.200.000</td></tr>
+          <tr><td>06 Okt 2026</td><td>IGD</td><td>IGD</td><td>67</td><td>Rp 15.900.000</td></tr>
+          <tr><td>06 Okt 2026</td><td>Melati 3</td><td>Rawat Inap</td><td>24</td><td>Rp 64.800.000</td></tr>
+        </table>
+        </div>
+        <div class="footer-actions" style="margin-top:16px;">
+          <button class="btn btn-outline">📄 Ekspor PDF</button>
+          <button class="btn btn-outline">📊 Ekspor Excel</button>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline">Reset Filter</button>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Logout</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
